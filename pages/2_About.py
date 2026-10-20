@@ -28,47 +28,52 @@ hide_menu = '''
 st.markdown(hide_menu, unsafe_allow_html=True)
 
 st.header("Tutorial: Get your free API key", divider="gray", anchor=False)
+
+# Aviso: o video mostra o GitHub Models, que foi desativado
+st.warning('''
+**Note:** this video shows **GitHub Models**, which was shut down in July 2026.
+The app now uses **OpenRouter**, which also offers free models:
+
+1. Get your free API key at [openrouter.ai/keys](https://openrouter.ai/keys)
+2. Paste it in the "API Key" field on the main page
+3. Choose one of the free models in the list (their IDs end in `:free`)
+
+To see all free models, go to [openrouter.ai/models](https://openrouter.ai/models)
+and type "free" in the search bar, or open
+[this filtered list](https://openrouter.ai/models?max_price=0).
+''')
+
+# Print da pagina de API Keys da OpenRouter (botao "New Key" no canto superior direito)
+st.image(path + '/new_apikey_tutorial.png',
+         caption='OpenRouter API Keys page: click "+ New Key" to create your free key')
+
 st_player("https://youtu.be/N25rt8F0RPc")
 
 st.markdown('''
 ## About:
 
-This app is an example of how to use free APIs to create a chat platform with different LLMs. Watch the tutorial video
-to learn how to obtain a free api key.
+This app is an example of how to use free APIs to create a chat platform with different LLMs.
+Get your free API key here:
 
-https://github.com/marketplace/models
+https://openrouter.ai/keys
 
 ## Limits (Free Account):
 
-https://docs.github.com/en/github-models/prototyping-with-ai-models#rate-limits
+Free models (IDs ending in `:free`) cost nothing per token, but have request limits.
+The free model list changes often, so if a model stops working, just pick another one.
 
+More details: https://openrouter.ai/docs/api/reference/limits
   '''
             )
 
-# Lista de modelos
-llms = ["gpt-4o-mini", "Meta-Llama-3.1-8B-Instruct", "Phi-4", "DeepSeek-R1", "gpt-4o"]
-
-# Dados para cada modelo
+# Limites dos modelos gratuitos da OpenRouter (valem para todos os modelos ":free")
 data = {
     "Metric": [
         "Requests per minute",
         "Requests per day",
-        "Tokens per request (in)",
-        "Tokens per request (out)",
-        "Concurrent requests"
-    ]
+        "Requests per day (after buying $10 in credits once)",
+    ],
+    "Free models (:free)": [20, 50, 1000],
 }
 
-# Valores correspondentes para cada modelo
-for model in llms:
-    if model in ["gpt-4o-mini", "Meta-Llama-3.1-8B-Instruct", "Phi-4"]:
-        values = [15, 150, 8000, 4000, 5]
-    elif model == "DeepSeek-R1":
-        values = [1, 8, 4000, 4000, 1]
-    else:
-        values = [10, 50, 8000, 4000, 2]
-
-    data[model] = values
-
-# Criar DataFrame
 st.dataframe(pd.DataFrame(data), hide_index=True)

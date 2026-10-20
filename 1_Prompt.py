@@ -82,14 +82,26 @@ with st.expander("Get your free API key first", expanded=True):
                                  help="Veja os modelos gratuitos em https://openrouter.ai/models?max_price=0")
 
     # Logo do assistente de acordo com a empresa do modelo
+    # (a parte antes da "/" no ID do modelo -> arquivo em pages/images)
     logos = {
         "openai": "ChatGPT_logo.png",
         "deepseek": "DeepSeek_logo.png",
         "meta-llama": "meta_logo.png",
+        "meta": "meta_logo.png",
         "microsoft": "ms_logo.png",
+        "nvidia": "nvidia_logo.png",
+        "google": "google_logo.png",
+        "cohere": "cohere_logo.png",
+        "liquid": "liquid_logo.png",
+        "minimax": "minimax_logo.png",
+        "poolside": "poolside_logo.png",
+        "thinkingmachines": "thinkingmachines_logo.png",
     }
     company = (ai_model or "").split("/")[0]
-    img_ai = Image.open(path + '/pages/images/' + logos.get(company, "mechub_logo.png"))
+    logo_file = path + '/pages/images/' + logos.get(company, "mechub_logo.png")
+    if not os.path.exists(logo_file):  # se a imagem ainda nao foi baixada, usa a logo do MecHub
+        logo_file = path + '/pages/images/mechub_logo.png'
+    img_ai = Image.open(logo_file)
 
 
     api_key = st.text_input("API Key", type="password", key='st_api_key')

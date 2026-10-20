@@ -32,8 +32,23 @@ import plotly.express as px
 import time
 import random
 
+import json
+import urllib.request
+
 import openai
 from openai import OpenAI
+
+
+# Busca na OpenRouter a lista atual de modelos gratuitos (IDs terminados em ":free").
+# Assim o app nao quebra quando a OpenRouter troca os modelos gratis.
+@st.cache_data(ttl=3600)
+def get_free_models():
+    try:
+        with urllib.request.urlopen("https://openrouter.ai/api/v1/models", timeout=15) as r:
+            data = json.load(r)["data"]
+        return sorted(m["id"] for m in data if m["id"].endswith(":free"))
+    except Exception:
+        return []
 
 
 if 'active_page' not in st.session_state:
@@ -41,7 +56,6 @@ if 'active_page' not in st.session_state:
 
     st.session_state.st_response = False
     st.session_state.st_maxtokens = 1000
-    st.session_state.st_ai_model = 'gpt-4o-mini'
     st.session_state.st_total_tokens_used = 0
     st.session_state.st_message_id_list = []
     st.session_state.st_message_list = []
@@ -58,26 +72,24 @@ user_msg = st.chat_input("Say something")
 
 with st.expander("Get your free API key first", expanded=True):
 
-    st.link_button("FREE API KEYS", 'https://github.com/marketplace/models')
+    st.link_button("FREE API KEYS", 'https://openrouter.ai/keys')
 
-    ai_model = st.selectbox(
-        "Select LLM",
-        ("gpt-4o", "gpt-4o-mini", "DeepSeek-R1", "Meta-Llama-3.1-8B-Instruct", "Phi-4"),
-        key="st_ai_model",
-    )
+    free_models = get_free_models()
+    if free_models:
+        ai_model = st.selectbox("Select LLM (free models)", free_models, key="st_ai_model")
+    else:
+        ai_model = st.text_input("Model ID (ex: modelo:free)", key="st_ai_model",
+                                 help="Veja os modelos gratuitos em https://openrouter.ai/models?max_price=0")
 
-    if ai_model in ['gpt-4o',"gpt-4o-mini"]:
-        my_file1 = path + '/pages/images/ChatGPT_logo.png'
-        img_ai = Image.open(my_file1)
-    elif ai_model == 'DeepSeek-R1':
-        my_file1 = path + '/pages/images/DeepSeek_logo.png'
-        img_ai = Image.open(my_file1)
-    elif ai_model == 'Meta-Llama-3.1-8B-Instruct':
-        my_file1 = path + '/pages/images/meta_logo.png'
-        img_ai = Image.open(my_file1)
-    elif ai_model == 'Phi-4':
-        my_file1 = path + '/pages/images/ms_logo.png'
-        img_ai = Image.open(my_file1)
+    # Logo do assistente de acordo com a empresa do modelo
+    logos = {
+        "openai": "ChatGPT_logo.png",
+        "deepseek": "DeepSeek_logo.png",
+        "meta-llama": "meta_logo.png",
+        "microsoft": "ms_logo.png",
+    }
+    company = (ai_model or "").split("/")[0]
+    img_ai = Image.open(path + '/pages/images/' + logos.get(company, "mechub_logo.png"))
 
 
     api_key = st.text_input("API Key", type="password", key='st_api_key')
@@ -86,11 +98,9 @@ with st.expander("Get your free API key first", expanded=True):
         "Metric": [
             "Requests per minute",
             "Requests per day",
-            "Tokens per request (in)",
-            "Tokens per request (out)",
-            "Concurrent requests"
+            "Requests per day (after buying $10 in credits once)",
         ],
-        "Value": [15, 150, 8000, 4000, 5] if ai_model in ["gpt-4o-mini","Meta-Llama-3.1-8B-Instruct", "Phi-4"] else [1, 8, 4000, 4000, 1] if ai_model == 'DeepSeek-R1' else [10, 50, 8000, 4000, 2]
+        "Value": [20, 50, 1000]
     }
 
     df_limits = pd.DataFrame(data_limits)
@@ -102,7 +112,7 @@ with st.expander("Options"):
 
 
 client = OpenAI(
-    base_url="https://models.inference.ai.azure.com",
+    base_url="https://openrouter.ai/api/v1",
     api_key=str(api_key),
     #api_key=
 )

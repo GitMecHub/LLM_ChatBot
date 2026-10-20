@@ -3,7 +3,7 @@ numpy==2.2.1
 pandas==2.2.3
 Pillow==10.4.0
 plotly==6.0.0
-streamlit==1.41.1
+streamlit==1.65.0
 streamlit-player==0.1.5
 XlsxWriter==3.2.0
 openpyxl==3.1.5
